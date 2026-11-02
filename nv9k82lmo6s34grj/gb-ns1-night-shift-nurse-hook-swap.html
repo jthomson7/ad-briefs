@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex,nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Guard Blinds · CRID0194 · Night shift nurse: new hooks on Client #12 – brief</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&amp;family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap">
+<style>
+/* Layout: a Milanote-style brief board. One brief at a time, picked from the dropdown top left.
+   Three zones read left to right, split by dotted rules: the brief, the ad structure (hooks merge into the hold,
+   then the CTA), and the editing notes. White cards with a purple top edge on a grey board. Zones stack when narrow. */
+:root{
+  --bg:#ECEDF0; --surface:#FFFFFF; --sunk:#F5F5F8; --ink:#1E1F24; --muted:#6A6E79; --line:#DEDFE4; --line-strong:#B9BCC6;
+  --accent:#7A4FD3; --accent-ink:#FFFFFF; --accent-soft:#F0EAFC;
+  --insp:#6A47C8; --insp-soft:#EEE8FB; --imit:#B4400F; --imit-soft:#FBE7DC; --iter:#2A7A2F; --iter-soft:#E1F1E2;
+  --danger:#B42318; --ok:#2A7A2F;
+  --f-head:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --f-body:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --r:4px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#121317; --surface:#1C1D23; --sunk:#17181D; --ink:#E9E9EE; --muted:#A0A3AD; --line:#2D2F37; --line-strong:#4A4D58;
+  --accent:#AD8BFF; --accent-ink:#1A1030; --accent-soft:#2B2340;
+  --insp:#AD8BFF; --insp-soft:#2B2340; --imit:#F38B5E; --imit-soft:#3A2116; --iter:#6FCB73; --iter-soft:#17301A;
+  --danger:#FF7B6E; --ok:#6FCB73; color-scheme:dark;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--f-body)}
+img{max-width:100%}
+[hidden]{display:none!important}
+#app{max-width:1600px;margin:0 auto;padding-inline:clamp(16px,3vw,40px);padding-block:18px 80px}
+a{color:var(--accent)}
+button{font:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,.in:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Top bar */
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;min-height:40px}
+.picker{display:flex;align-items:center;gap:10px;min-width:0;max-width:100%}
+.picker label{font-size:13px;color:var(--muted)}
+.picker select{font:500 15px/1.3 var(--f-body);color:var(--ink);background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--r);padding:8px 12px;max-width:min(460px,70vw);min-width:0;cursor:pointer}
+.picker select:disabled{opacity:.6;cursor:default}
+.badge{font-size:13px;color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end}
+.btn{border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);padding:8px 16px;border-radius:var(--r);font-weight:500;font-size:14px}
+.btn:hover{border-color:var(--ink)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn-primary:hover{filter:brightness(1.07);border-color:var(--accent)}
+.btn-danger{color:var(--danger)}
+.btn[disabled]{opacity:.55;cursor:default}
+.note{font-size:13px;color:var(--muted);max-width:420px}
+.note.err{color:var(--danger)}
+.note.good{color:var(--ok)}
+
+/* Title */
+.title{text-align:center;padding-block:44px 40px}
+.title h1{font:700 clamp(30px,3.6vw,46px)/1.1 var(--f-head);margin:0;text-wrap:balance}
+.sub{margin-top:10px;color:var(--muted);font-size:15px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px 16px}
+.status{display:inline-block;padding:1px 10px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:500}
+.title-edit{display:grid;gap:10px;max-width:760px;margin-inline:auto;padding-block:36px 32px}
+
+/* Board */
+.board{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr) minmax(0,270px);align-items:start}
+.zone{display:grid;gap:22px;min-width:0;align-content:start;padding-inline:clamp(16px,1.8vw,32px)}
+.zone:first-child{padding-left:0}
+.zone:last-child{padding-right:0}
+.zone + .zone{border-left:2px dotted var(--accent)}
+.zone-h{justify-self:center;background:var(--accent);color:var(--accent-ink);font:700 15px/1 var(--f-head);letter-spacing:.06em;text-transform:uppercase;padding:14px 26px;border-radius:2px;margin-bottom:8px;text-align:center}
+@media (max-width:1180px){
+  .board{grid-template-columns:minmax(0,1fr)}
+  .zone{padding-inline:0}
+  .zone + .zone{border-left:0;border-top:2px dotted var(--accent);padding-top:36px;margin-top:36px}
+}
+
+.card{background:var(--surface);border-top:4px solid var(--accent);border-radius:2px;box-shadow:0 1px 2px rgba(20,20,40,.06);padding:22px 24px;display:grid;gap:16px;min-width:0;align-content:start}
+.card-h{display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;font:700 15px/1.3 var(--f-head);text-transform:uppercase;letter-spacing:.04em;position:relative;min-height:24px}
+.card-h .tools{position:absolute;right:-10px;top:-8px}
+.f{display:grid;gap:4px;min-width:0}
+.f-l{font:700 14px/1.3 var(--f-head);text-transform:uppercase;letter-spacing:.03em}
+.f-v{overflow-wrap:anywhere}
+.center{text-align:center}
+.big{font:700 clamp(20px,1.7vw,24px)/1.3 var(--f-head);text-align:center;text-wrap:balance;overflow-wrap:anywhere}
+.empty{font-size:14px;color:var(--muted);font-style:italic;text-align:center}
+.stack{display:grid;gap:4px;text-align:center;font:700 19px/1.5 var(--f-head);text-transform:uppercase}
+.ticks{list-style:none;margin:0;padding:0;display:grid;gap:4px;text-align:center}
+.ticks li::before{content:"✓  ";color:var(--accent);font-weight:600}
+
+/* Inputs (edit mode) */
+.in{width:100%;font:inherit;font-size:15px;color:var(--ink);background:var(--sunk);border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;resize:none;overflow:hidden;min-width:0}
+.in::placeholder{color:var(--muted);opacity:.85}
+.in-big{font:700 18px/1.3 var(--f-head)}
+.f-hint{font-size:13px;color:var(--muted)}
+.row2{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.mini{border:1px dashed var(--line-strong);background:transparent;color:var(--muted);border-radius:var(--r);padding:6px 12px;font-size:14px}
+.mini:hover{color:var(--ink);border-color:var(--ink)}
+.x{border:0;background:transparent;color:var(--muted);font-size:20px;line-height:1;padding:4px 8px;border-radius:var(--r)}
+.x:hover{color:var(--danger);background:var(--sunk)}
+.add-row{display:flex;flex-wrap:wrap;gap:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--sunk);color:var(--muted);border-radius:var(--r);padding:6px 10px;font-size:14px}
+.chip.on{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+.boxed{display:grid;gap:10px;padding:12px;border:1px dashed var(--line-strong);border-radius:var(--r);position:relative}
+.boxed > .tools{position:absolute;right:2px;top:2px}
+
+/* Structure */
+.row{display:grid;grid-template-columns:repeat(var(--n,3),minmax(160px,1fr));gap:18px;overflow-x:auto;padding-bottom:2px}
+.row > .card{padding:18px 12px}
+.frame{width:100%;max-width:320px;margin-inline:auto;aspect-ratio:var(--ar,9/16);background:var(--surface);border:1px solid var(--line-strong);border-radius:14px;display:grid;place-items:center;overflow:hidden}
+.frame-text{display:inline-block;white-space:pre;text-align:center;font:700 18px/1.3 var(--f-head);color:var(--ink)}
+.frame-cap{font-size:12px;color:var(--muted);text-align:center;margin-top:6px}
+.join{position:relative;height:56px;margin-inline:calc(100% / var(--n, 1) / 2);margin-block:-22px}
+.join::before{content:"";position:absolute;left:0;right:0;top:0;height:28px;border:2px solid var(--line-strong);border-top:0}
+.join.single::before{left:50%;right:auto;width:0;border-right:0}
+.join::after{content:"";position:absolute;left:50%;top:28px;bottom:0;border-left:2px solid var(--line-strong);transform:translateX(-1px)}
+.down{position:relative;height:40px;margin-block:-22px}
+.down::after{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:2px solid var(--line-strong);transform:translateX(-1px)}
+.narrow{max-width:560px;width:100%;margin-inline:auto;display:grid;gap:22px}
+
+/* Media */
+.media{display:grid;gap:10px}
+.mi{margin:0;position:relative;min-width:0}
+.mi video,.mi img{display:block;width:100%;max-height:520px;object-fit:contain;background:#000;border-radius:2px}
+.mi img{background:var(--sunk)}
+.mi audio{width:100%;display:block}
+.mi figcaption{font-size:13px;color:var(--muted);margin-top:6px;overflow-wrap:anywhere;text-align:center}
+.mi .dl{display:inline-block;margin-left:8px;font-weight:600;color:var(--accent)}
+.dlr{display:block;margin-top:2px}.dlr .dl{margin:0 5px}
+.dv{position:relative;display:block;width:100%;padding:0;border:0;background:#000;border-radius:2px;cursor:pointer;min-height:120px}
+.dv img{display:block;width:100%;max-height:520px;object-fit:contain;opacity:.85}
+.dv-play{position:absolute;inset:0;margin:auto;width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.92);color:#111;font-size:20px;line-height:52px;text-align:center}
+.dv-lab{position:absolute;left:8px;bottom:8px;font-size:11px;font-weight:600;color:#fff;background:rgba(0,0,0,.55);padding:2px 6px;border-radius:2px}
+.dv-frame{display:block;width:100%;aspect-ratio:9/16;max-height:520px;border:0;background:#000;border-radius:2px}
+.row .dv img,.sc .dv img{max-height:190px}
+.row .dv-frame,.sc .dv-frame{max-height:320px}
+.scenes{display:grid;gap:12px}
+.sc{display:grid;grid-template-columns:34px minmax(0,1fr) 22px minmax(0,1.25fr);gap:8px;align-items:start}
+.fmt{display:inline-flex;align-items:center;gap:10px;margin-top:14px;padding:8px 16px;border-radius:99px;background:var(--accent);color:#fff;font-weight:700;font-size:15px}
+.fmt-l{font-size:11px;text-transform:uppercase;letter-spacing:.06em;opacity:.8;font-weight:600}
+.memo{max-width:1100px;margin:0 auto 28px;border:2px solid var(--accent);border-radius:12px;background:var(--surface);padding:6px 22px}
+.memo summary{cursor:pointer;font-weight:700;font-size:17px;padding:12px 0}
+.memo-p{font-weight:400;font-size:12px;color:var(--muted);margin-left:8px}
+.memo-s{font-size:16px;line-height:1.5;margin:0 0 14px}
+.memo-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px 22px;padding-bottom:18px}
+.memo-q{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--accent);margin-bottom:3px}
+.memo-a{line-height:1.5}
+.gg-wide{grid-column:1/-1}
+.gg-h{font-size:13px;font-weight:700;margin:6px 0 10px;padding-top:8px;border-top:1px solid var(--line-strong)}
+.sc-short{font-size:11px;font-weight:700;color:#fff;background:#c62f3a;border-radius:99px;padding:1px 8px;text-transform:none;letter-spacing:0}
+.sc-nc{display:flex;flex-direction:column;align-items:center;gap:2px}
+.sc-t{font-size:11px;font-weight:700;color:var(--c);white-space:nowrap}
+.sc-fl{font-size:11px;font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0;margin-left:auto}
+.sc-n{width:26px;height:26px;border-radius:50%;background:var(--c);color:#fff;font-weight:700;font-size:13px;line-height:26px;text-align:center;margin-top:8px}
+.sc-box{border:1px solid var(--line-strong);border-left:4px solid var(--c);border-radius:8px;padding:8px 10px;min-width:0;background:var(--surface)}
+.sc-h{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:6px;position:relative}
+.sc-h .x{margin-left:auto}
+.sc-text{white-space:pre-line;font-weight:700;line-height:1.35}
+.sc-none{font-weight:400;font-style:italic;color:var(--muted)}
+.sc-sub{display:block;font-size:11px;font-weight:600;color:var(--muted);margin:6px 0 2px}
+.sc-vo{white-space:pre-line;font-style:italic;line-height:1.35}
+.fullscript{display:grid;gap:5px;border:1px solid var(--line-strong);border-radius:8px;padding:10px;background:var(--surface);margin-bottom:8px}
+.ls{display:flex;gap:10px;align-items:baseline;padding:5px 10px;border-radius:6px;background:color-mix(in srgb,var(--c) 16%,transparent);border-left:4px solid var(--c)}
+.ls-n{font-size:11px;font-weight:700;color:var(--c);min-width:12px}
+.ls-t{line-height:1.45}
+.sc-arrow{color:var(--c);font-size:20px;font-weight:700;text-align:center;margin-top:30px}
+.sc-tag{text-transform:none;letter-spacing:0;font-size:11px;padding:1px 8px;border-radius:99px;background:color-mix(in srgb,var(--c) 15%,transparent);color:var(--c)}
+.sc-tag.sc-new{background:#c62f3a;color:#fff}
+.sc-tag.sc-edit{background:var(--sunk,#eee);color:var(--muted)}
+.sc-vis-t{font-size:14px;margin-bottom:6px}
+.sc .media .mi video{max-height:260px}
+.row .media,.sc .media{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.row .mi video,.row .mi img,.sc .mi video{max-height:190px}
+.row .mi figcaption,.sc .mi figcaption{font-size:11px}
+.sc-sel{width:auto;padding:2px 6px;font-size:12px;text-transform:none}
+@media (max-width:640px){.sc{grid-template-columns:24px minmax(0,1fr)}.sc-arrow{grid-column:2;margin:0;transform:rotate(90deg);width:20px}.sc-r{grid-column:2}}
+.mi > .x{position:absolute;top:4px;right:4px;z-index:1;background:var(--surface)}
+.lk{display:grid;gap:2px;text-decoration:none;border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;background:var(--sunk)}
+.lk:hover{border-color:var(--accent)}
+.lk-host{font-size:12px;color:var(--muted)}
+.lk-name{color:var(--accent);font-weight:500;overflow-wrap:anywhere}
+.link-edit{display:grid;gap:8px;padding:10px;padding-right:40px;border:1px dashed var(--line-strong);border-radius:var(--r);position:relative}
+.link-edit > .x{position:absolute;top:4px;right:4px}
+.missing{padding:14px;border:1px dashed var(--line-strong);border-radius:var(--r);color:var(--muted);font-size:14px;text-align:center}
+
+/* Reference tags */
+.ref{--c:var(--insp);--c-soft:var(--insp-soft);border-top-color:var(--c)}
+.ref.imitation{--c:var(--imit);--c-soft:var(--imit-soft)}
+.ref.iteration{--c:var(--iter);--c-soft:var(--iter-soft)}
+.rtag{display:inline-block;background:var(--c-soft);color:var(--c);padding:3px 10px;border-radius:2px;font:700 13px/1.4 var(--f-body);letter-spacing:.08em;text-transform:uppercase}
+.rhint{font-size:13px;color:var(--muted);text-align:center;margin-top:-6px}
+
+.foot{margin-top:56px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
+.loading{padding:60px 0;text-align:center;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<script type="application/json" id="export-data">{"client": "Guard Blinds", "batch": "Core avatars: short organic, Oct 26", "title": "CRID0194 \u00b7 Night shift nurse: new hooks on Client #12", "format": "Iteration \u00b7 new hook text + 2 closing text lines \u00b7 text on screen, original music, no voiceover", "status": "Draft", "adType": "Video ad", "sizes": ["9x16"], "length": "~14 s", "due": "", "linksTo": {"kind": "link", "url": "https://guardblinds.com/products/guard-total-blackout-blinds", "name": "Guard 2 product page"}, "concept": "A night shift nurse gets home after the sun's up and can finally sleep the moment she walks in.", "angle": "Name the job and the moment she gets home: she's a night shift nurse and the sun is already up.", "audience": "Night shift nurses and CNAs (7p-7a) who have to sleep through the morning.", "notes": "", "references": [{"tag": "iteration", "title": "Client #12: \"POV: You're a Night Shift Nurse and it's 8am\"", "note": "Our own ad. Keep the body. Only the hook text changes.", "media": [{"kind": "video", "name": "ref-client-12-night-shift-nurse.mp4", "drive": "100mGosOtN0u3t7nWOQj9ZUNORxXH8KcR"}]}], "hooks": [{"onScreen": "POV: you're a\nnight shift nurse\nand the sun\nbeat you home", "vo": "", "visual": "Client #12, 0\u20138 s, exactly as it ran. Your hook text replaces the old POV line for the full 8 s.", "notes": "", "media": [{"kind": "video", "name": "ad-client12-0-8s-with-pov-line.mp4", "drive": "12DdcikYwhW8CbSyX28eLGNk3p807r0by"}], "secs": "8", "secsLock": true}, {"onScreen": "Night shift CNAs know.\nThe sun's already up\nby the time we walk out.", "vo": "", "visual": "Client #12, 0\u20138 s, exactly as it ran. Your hook text replaces the old POV line for the full 8 s.", "notes": "", "media": [{"kind": "video", "name": "ad-client12-0-8s-with-pov-line.mp4", "drive": "12DdcikYwhW8CbSyX28eLGNk3p807r0by"}], "secs": "8", "secsLock": true}, {"onScreen": "7p to 7a nurses,\nthis one's for your\nbedroom window", "vo": "", "visual": "Client #12, 0\u20138 s, exactly as it ran. Your hook text replaces the old POV line for the full 8 s.", "notes": "", "media": [{"kind": "video", "name": "ad-client12-0-8s-with-pov-line.mp4", "drive": "12DdcikYwhW8CbSyX28eLGNk3p807r0by"}], "secs": "8", "secsLock": true}], "holds": [{"script": "", "onScreen": "", "visual": "", "notes": "", "media": [], "beats": [{"text": "8\u201310.5 s, over the black:\nFamily dinner at 5:30.\nI'm actually human for it.\n\n10.5\u201312 s, as it opens:\nOver 100,000 blinds\nsold in the U.S.", "vo": "", "shoot": "original", "secsLock": true, "secs": "4", "visual": "Client #12, 8\u201312 s, exactly as it ran: the room goes black, then the blind slides open. End card at 12 s.", "media": [{"kind": "video", "name": "ad-client12-8-12s-reveal.mp4", "drive": "1tvSdKiZLoUwRa4UgB3iRzGFiYMfwTFPk"}], "footage": "4"}]}], "cta": {"copy": "GUARD\nGET 35% OFF", "visual": "Black end card, ~1.5 s: the GUARD wordmark from our current end cards + \"GET 35% OFF\" in white. Music carries over it.", "notes": "", "media": []}, "guidelines": "\u2022 Your hook text replaces the old \"POV\" line: same spot, same size, up for the full 0\u20138 s, covering it completely.\n\u2022 Nothing else changes: Client #12's footage, music and cuts stay as they ran.\n\u2022 The two closing lines use the same text style as the hook (timings in the hold).\n\u2022 End card: ours with 35% off, replacing the old \"GET 30% OFF\" card.\n\u2022 Deliverables: 3 ads, 1080\u00d71920, named by hook (H1, H2, H3). Each = that hook + the same hold + the end card.", "voiceover": [], "links": [], "sections": [], "id": "gb-ns1-night-shift-nurse-hook-swap", "updated": "2026-10-26T22:00:00+00:00", "order": 1, "crid": "CRID0194"}</script>
+<div id="app"><p class="loading">Loading briefs…</p></div>
+<input type="file" id="file-input" multiple accept=".mp4,.mov,.webm,.mp3,.wav,.m4a,.png,.jpg,.jpeg,.webp,.gif,.pdf" hidden>
+<script>
+(function(){
+  "use strict";
+  var SIZES = [["1x1","1080×1080 (1:1)"],["4x5","1080×1350 (4:5)"],["9x16","1080×1920 (9:16)"],["16x9","1920×1080 (16:9)"]];
+  var TYPES = ["Video ad","Image ad","Carousel ad"];
+  var STATUSES = ["Draft","Ready for edit","In edit","In review","Delivered"];
+  var REFTAGS = {
+    inspiration:"Take the feel: pacing, energy, look. Don't copy it.",
+    imitation:"Rebuild it shot for shot with our product and script.",
+    iteration:"Our own ad. Keep everything except what the notes change."
+  };
+
+  var exportText = (document.getElementById("export-data").textContent || "").trim();
+  var READONLY = !!exportText;
+  var briefs = [], cur = 0, draft = null, busy = false, armDelete = false, isNew = false;
+  var msg = {text:"", kind:""};
+  var memoOpen = true;
+  var app = document.getElementById("app");
+  var fileInput = document.getElementById("file-input");
+  var fileTarget = null;
+
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
+  function newId(){ return "brief-" + Date.now().toString(36); }
+  function blankBrief(){ return {id:newId(), client:"", batch:"", title:"", status:"Draft", adType:"Video ad", sizes:["9x16"], length:"", due:"",
+    linksTo:{kind:"link",url:"",name:""}, concept:"", angle:"", audience:"", notes:"", references:[],
+    hooks:[{visual:"",onScreen:"",vo:"",notes:"",media:[]}], holds:[{script:"",onScreen:"",visual:"",notes:"",media:[]}],
+    cta:{copy:"",visual:"",notes:"",media:[]}, guidelines:"", voiceover:[], links:[], sections:[]}; }
+  function normalize(b){
+    b.hooks = b.hooks || []; b.holds = b.holds || []; b.cta = b.cta || {};
+    b.references = b.references || []; b.voiceover = b.voiceover || []; b.links = b.links || [];
+    b.sections = b.sections || []; b.sizes = b.sizes || [];
+    b.linksTo = b.linksTo || {kind:"link",url:"",name:""};
+    [b.hooks,b.holds,b.references,b.voiceover,b.sections].forEach(function(a){ a.forEach(function(x){ x.media = x.media || []; }); });
+    b.cta.media = b.cta.media || [];
+    b.holds.forEach(function(h){ (h.beats || []).forEach(function(s){ s.media = s.media || []; }); });
+    return b;
+  }
+  var editing = function(){ return !!draft; };
+  function B(){ return draft || briefs[cur]; }
+  function esc(v){ return String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  function fid(p){ return "f-" + p.replace(/[^a-z0-9]+/gi,"-"); }
+  function getPath(o,p){ return p.split(".").reduce(function(a,k){ return a == null ? a : a[k]; }, o); }
+  function setPath(o,p,v){ var ks = p.split("."), last = ks.pop(); var t = ks.reduce(function(a,k){ return a[k]; }, o); t[last] = v; }
+  function normUrl(u){ u = String(u || "").trim(); if (!u) return ""; if (!/^[a-z]+:/i.test(u)) u = "https://" + u; return /^https?:\/\//i.test(u) ? u : ""; }
+  function host(u){ try { return new URL(normUrl(u)).hostname.replace(/^www\./,""); } catch(e){ return "link"; } }
+  function txt(v){ return esc(v).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>').replace(/\n/g,"<br>"); }
+  function plural(n,w){ return n + " " + w + (n === 1 ? "" : "s"); }
+  function briefName(b){ return [b.client, b.title].filter(Boolean).join(" · ") || "Untitled brief"; }
+
+  /* ---------- small builders ---------- */
+  function field(path,label,o){
+    o = o || {};
+    var v = getPath(B(),path) || "";
+    if (!editing()){
+      if (!String(v).trim()) return o.empty ? '<div class="empty">'+esc(o.empty)+'</div>' : "";
+      var lab = label ? '<div class="f-l">'+label+':</div>' : "";
+      return '<div class="f">'+lab+(o.big ? '<div class="big">'+txt(v)+'</div>' : '<div class="f-v'+(o.center?' center':'')+'">'+txt(v)+'</div>')+'</div>';
+    }
+    return '<label class="f" for="'+fid(path)+'">'+(label?'<span class="f-l">'+label+'</span>':'')+'<textarea class="in'+(o.big?' in-big':'')+'" id="'+fid(path)+'" data-path="'+path+'" rows="'+(o.rows||1)+'" placeholder="'+esc(o.ph||"")+'">'+esc(v)+'</textarea></label>';
+  }
+  function input(path,label,ph){
+    var v = getPath(B(),path) || "";
+    return '<label class="f" for="'+fid(path)+'">'+(label?'<span class="f-l">'+label+'</span>':'')+'<input class="in" id="'+fid(path)+'" data-path="'+path+'" value="'+esc(v)+'" placeholder="'+esc(ph||"")+'"></label>';
+  }
+  function xBtn(path){ return '<button class="x" data-act="del" data-path="'+path+'" aria-label="Remove" title="Remove">×</button>'; }
+  function tools(path){ return editing() && path ? '<span class="tools">'+xBtn(path)+'</span>' : ""; }
+  function mediaItem(m,p){
+    var ed = editing();
+    if (m.kind === "link"){
+      if (ed) return '<div class="link-edit">'+xBtn(p)+'<input class="in" id="'+fid(p+".url")+'" data-path="'+p+'.url" value="'+esc(m.url||"")+'" placeholder="Paste a link: Drive, Frame.io, Facebook ad, YouTube…"><input class="in" id="'+fid(p+".name")+'" data-path="'+p+'.name" value="'+esc(m.name||"")+'" placeholder="Label (optional)"></div>';
+      var u = normUrl(m.url); if (!u) return "";
+      return '<a class="mi lk" href="'+esc(u)+'" target="_blank" rel="noopener"><span class="lk-host">'+esc(host(u))+'</span><span class="lk-name">'+esc(m.name || u)+'</span></a>';
+    }
+    var el;
+    if (m.drive && !ed){
+      // Clip lives in Google Drive: show its thumbnail, load Drive's player only when clicked.
+      var id = encodeURIComponent(m.drive), view = "https://drive.google.com/file/d/"+id+"/view";
+      var thumb = "https://drive.google.com/thumbnail?id="+id+"&sz=w"+(m.kind === "image" ? 1600 : 800);
+      if (m.kind === "image") el = '<a href="'+view+'" target="_blank" rel="noopener"><img src="'+thumb+'" alt="'+esc(m.name||"")+'" loading="lazy"></a>';
+      else el = '<button class="dv" data-act="dplay" data-id="'+id+'" title="Play"><img src="'+thumb+'" alt="" loading="lazy"><span class="dv-play">▶</span><span class="dv-lab">'+(m.kind === "audio" ? "Play audio" : "Play clip")+'</span></button>';
+      var cap0 = esc(m.name||""), links = '<a class="dl" href="https://drive.google.com/uc?export=download&id='+id+'" target="_blank" rel="noopener">Download</a><a class="dl" href="'+view+'" target="_blank" rel="noopener">Open in Drive</a>';
+      return '<figure class="mi">'+el+'<figcaption>'+cap0+'<span class="dlr">'+links+'</span></figcaption></figure>';
+    }
+    if (m.missing) el = '<div class="missing">'+esc(m.name || "File")+' wasn\'t included. Ask for the file.</div>';
+    else {
+      var s = esc(m.src || "");
+      if (m.kind === "video") el = '<video controls preload="metadata" playsinline src="'+s+'"></video>';
+      else if (m.kind === "audio") el = '<audio controls preload="metadata" src="'+s+'"></audio>';
+      else if (m.kind === "image") el = '<img src="'+s+'" alt="'+esc(m.name||"")+'" loading="lazy">';
+      else el = '<a class="lk" href="'+s+'" target="_blank" rel="noopener"><span class="lk-host">file</span><span class="lk-name">'+esc(m.name||"Open file")+'</span></a>';
+    }
+    var cap = ed ? '<input class="in" id="'+fid(p+".name")+'" data-path="'+p+'.name" value="'+esc(m.name||"")+'" placeholder="Caption">' : esc(m.name||"");
+    var dl = (!ed && !m.missing && m.src) ? '<a class="dl" href="'+esc(m.src)+'" download="'+esc(m.name || "file")+'">Download</a>' : "";
+    return '<figure class="mi">'+(ed ? xBtn(p) : "")+el+(cap && !m.missing ? '<figcaption>'+cap+dl+'</figcaption>' : (dl ? '<figcaption>'+dl+'</figcaption>' : ''))+'</figure>';
+  }
+  function media(path, addLabel){
+    var arr = getPath(B(),path) || [];
+    var h = arr.map(function(m,i){ return mediaItem(m, path+"."+i); }).join("");
+    if (editing()) h += '<div class="add-row"><button class="mini" data-act="file" data-path="'+path+'">'+(addLabel||"Add file")+'</button><button class="mini" data-act="link" data-path="'+path+'">Add link</button></div>';
+    return h ? '<div class="media">'+h+'</div>' : "";
+  }
+  /* Scene-by-scene storyboard inside a hold: on-screen text → the shot, colour-matched per scene. */
+  var SCENE_COLORS = ["#2f7de1","#e0742b","#2e9d6b","#9b59d0","#d64a7a","#c49a1c","#1fa3a3","#7a7f87"];
+  function scenes(h, p){
+    var list = h.beats || [], ed = editing();
+    if (!list.length && !ed) return "";
+    var rows = list.map(function(s,j){
+      var sp = p+".beats."+j, c = SCENE_COLORS[j % SCENE_COLORS.length], isNew = s.shoot === "new";
+      var tx = String(s.text||"").trim(), vo = String(s.vo||"").trim(), lh, left;
+      if (ed){
+        lh = 'Voiceover / text on screen';
+        left = '<label class="sc-sub">Voiceover (captions come from this)</label><textarea class="in" id="'+fid(sp+".vo")+'" data-path="'+sp+'.vo" rows="2" placeholder="Blank = no voiceover">'+esc(s.vo||"")+'</textarea>'
+          + '<label class="sc-sub">Target length (seconds)</label><input class="in" id="'+fid(sp+".secs")+'" data-path="'+sp+'.secs" value="'+esc(s.secs||"")+'" placeholder="e.g. 3.5">'
+          + '<label class="sc-sub">Extra text on screen (not captions)</label><textarea class="in" id="'+fid(sp+".text")+'" data-path="'+sp+'.text" rows="2" placeholder="Blank = none">'+esc(s.text||"")+'</textarea>';
+      } else if (tx && vo){
+        lh = '🎙 Voiceover + extra text';
+        left = '<div class="sc-text">'+esc(s.vo)+'</div><div class="sc-sub">Extra text on screen</div><div class="sc-vo">'+esc(s.text)+'</div>';
+      } else if (vo){
+        lh = '🎙 Voiceover (captioned)'; left = '<div class="sc-text">'+esc(s.vo)+'</div>';
+      } else if (tx){
+        lh = 'Text on screen only'; left = '<div class="sc-text">'+esc(s.text)+'</div>';
+      } else { lh = 'No text, no voiceover'; left = '<div class="sc-text sc-none">Just the shot</div>'; }
+      var tag = ed
+        ? '<select class="in sc-sel" id="'+fid(sp+".shoot")+'" data-path="'+sp+'.shoot">'+[["library","Library clip"],["ad","Cut from our ad"],["original","Original ad, use as is"],["edit","In the edit"],["new","New footage"]].map(function(o){ return '<option value="'+o[0]+'"'+((s.shoot||"library")===o[0]?' selected':'')+'>'+o[1]+'</option>'; }).join("")+'</select>'
+        : '<span class="sc-tag'+(isNew?' sc-new':(s.shoot==="edit"?' sc-edit':''))+'">'+({"new":"New footage","edit":"In the edit","ad":"Cut from our ad"}[s.shoot] || 'Library clip')+'</span>';
+      var vis = ed
+        ? '<textarea class="in" id="'+fid(sp+".visual")+'" data-path="'+sp+'.visual" rows="2" placeholder="What we see">'+esc(s.visual||"")+'</textarea>'
+        : '<div class="sc-vis-t">'+txt(s.visual||"")+'</div>';
+      return '<div class="sc" style="--c:'+c+'">'
+        + '<div class="sc-nc"><div class="sc-n">'+(j+1)+'</div>'+(s.secs ? '<div class="sc-t">~'+esc(s.secs)+' s</div>' : '')+'</div>'
+        + '<div class="sc-box sc-l"><div class="sc-h">'+lh+'</div>'+left+'</div>'
+        + '<div class="sc-arrow" aria-hidden="true">→</div>'
+        + '<div class="sc-box sc-r"><div class="sc-h">'+(s.shoot==="edit" ? 'Made in the edit' : (s.shoot==="original" ? 'Original ad, use as is' : 'Suggested shot'))+' '+(s.shoot==="edit" || s.shoot==="original" ? '' : tag)+(s.footage ? '<span class="sc-fl">footage ~'+esc(s.footage)+' s</span>' : '')+(s.short ? '<span class="sc-short">⚠ add ~'+esc(s.short)+' s more footage</span>' : '')+(ed ? xBtn(sp) : '')+'</div>'+vis+media(sp+".media","Add clip")+'</div>'
+        + '</div>';
+    }).join("");
+    return '<div class="f"><div class="f-l">Scene by scene:</div><div class="scenes">'+rows+'</div>'
+      + (ed ? '<button class="mini" data-act="addbeat" data-path="'+p+'.beats">Add scene</button>' : '') + '</div>';
+  }
+
+  function holdScript(h, p){
+    var lines = (h.beats || []).map(function(s,j){ return {vo:String(s.vo||"").trim(), j:j}; }).filter(function(x){ return x.vo; });
+    if (!lines.length) return field(p+".script","Script",{rows:4,ph:"The body script, line by line"});
+    var plain = lines.map(function(x){ return x.vo; }).join("\n");
+    var rows = lines.map(function(x){ return '<div class="ls" style="--c:'+SCENE_COLORS[x.j % SCENE_COLORS.length]+'"><span class="ls-n">'+(x.j+1)+'</span><span class="ls-t">'+esc(x.vo)+'</span></div>'; }).join("");
+    return '<div class="f"><div class="f-l">Full voiceover script'+(editing() ? ' (edit the lines in the scenes below)' : '')+':</div><div class="fullscript">'+rows+'</div>'
+      + '<button class="mini" data-act="copyscript" data-text="'+esc(plain)+'">Copy script</button></div>';
+  }
+  function copyText(t){
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(t);
+    var ta = document.createElement("textarea"); ta.value = t; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } finally { document.body.removeChild(ta); }
+    return Promise.resolve();
+  }
+
+  function card(title, body, o){
+    o = o || {};
+    if (!editing() && !o.keep && !/\S/.test(body.replace(/<(?!video|img|audio|a )[^>]*>/g,""))) return "";
+    return '<div class="card '+(o.cls||"")+'"><div class="card-h">'+title+(o.tools||"")+'</div>'+body+'</div>';
+  }
+
+  /* ---------- header ---------- */
+  function top(){
+    if (READONLY) return '<div class="top"><span class="badge">Ad brief · read-only</span></div>';
+    var opts = briefs.map(function(b,i){ return '<option value="'+i+'"'+(i===cur?' selected':'')+'>'+esc(briefName(i===cur && draft ? draft : b))+'</option>'; }).join("");
+    var act;
+    if (editing()){
+      act = (isNew ? '' : '<button class="btn btn-danger" data-act="delete"'+(busy?' disabled':'')+'>'+(armDelete?'Click again to delete':'Delete brief')+'</button>')
+        + '<button class="btn" data-act="cancel"'+(busy?' disabled':'')+'>Cancel</button>'
+        + '<button class="btn btn-primary" data-act="save"'+(busy?' disabled':'')+'>'+(busy?'Saving…':'Save')+'</button>';
+    } else {
+      act = '<button class="btn" data-act="new">New brief</button>'
+        + (briefs.length ? '<button class="btn" data-act="dup">Duplicate</button><button class="btn" data-act="edit">Edit</button><button class="btn btn-primary" data-act="share"'+(busy?' disabled':'')+'>'+(busy?'Building…':'Share with editor')+'</button>' : '');
+    }
+    var note = msg.text ? '<span class="note '+(msg.kind||"")+'" role="status">'+esc(msg.text)+'</span>' : "";
+    return '<div class="top"><div class="picker"><label for="pick">Brief</label><select id="pick"'+(editing() || !briefs.length ? ' disabled title="Save or cancel first"' : '')+'>'+opts+'</select></div><div class="actions">'+note+act+'</div></div>';
+  }
+  function titleBlock(){
+    var b = B();
+    if (editing()){
+      return '<div class="title-edit">'
+        + '<textarea class="in in-big" id="f-title" data-path="title" rows="1" placeholder="Brief name, e.g. New dog mistakes" style="text-align:center;font-size:24px">'+esc(b.title||"")+'</textarea>'
+        + '<div class="row2">'+input("client","","Client")+input("batch","","Batch / DCT number")
+        + '<label class="f" for="f-status"><select class="in" id="f-status" data-path="status">'+STATUSES.map(function(x){ return '<option'+(x===b.status?' selected':'')+'>'+x+'</option>'; }).join("")+'</select></label></div>'
+        + input("format","Format","e.g. Organic comment reply · AI voiceover + captions") + '</div>';
+    }
+    var sub = [];
+    if (b.client) sub.push('<span>'+esc(b.client)+'</span>');
+    if (b.batch) sub.push('<span>'+esc(b.batch)+'</span>');
+    if (b.due) sub.push('<span>Due '+esc(b.due)+'</span>');
+    if (b.status) sub.push('<span class="status">'+esc(b.status)+'</span>');
+    return '<div class="title"><h1>'+esc(b.title || "Untitled brief")+'</h1><div class="sub">'+sub.join("")+'</div>'
+      + (b.format ? '<div class="fmt"><span class="fmt-l">Format</span>'+esc(b.format)+'</div>' : '') + '</div>';
+  }
+
+  /* Test memo: Josh only. Never rendered read-only, and the export strips it from the data. */
+  function memoBlock(){
+    if (READONLY) return "";
+    var b = B(), m = b.memo || [];
+    if (!m.length && !editing()) return "";
+    var rows = m.map(function(x,i){
+      var p = "memo."+i;
+      return '<div class="memo-r"><div class="memo-q">'+esc(x.q)+'</div>'
+        + (editing() ? '<textarea class="in" id="'+fid(p+".a")+'" data-path="'+p+'.a" rows="2">'+esc(x.a||"")+'</textarea>' : '<div class="memo-a">'+txt(x.a||"")+'</div>') + '</div>';
+    }).join("");
+    var g = b.growth || {}, GF = [["concept","Ad concept"],["coreAvatar","Core avatar"],["desire","Desire"],["subAvatar","Sub avatar"],["angles","Angles, one per video"],["memo","Breakthrough memo"],["awareness","Awareness level"],["fileType","File type"],["adType","Ad type"]];
+    var grow = GF.filter(function(x){ return editing() || String(g[x[0]]||"").trim(); }).map(function(x){
+      var p = "growth."+x[0];
+      return '<div class="memo-r'+(/angles|memo|subAvatar/.test(x[0]) ? ' gg-wide' : '')+'"><div class="memo-q">'+x[1]+'</div>'
+        + (editing() ? '<textarea class="in" id="'+fid(p)+'" data-path="'+p+'" rows="2">'+esc(g[x[0]]||"")+'</textarea>' : '<div class="memo-a">'+txt(g[x[0]]||"")+'</div>') + '</div>';
+    }).join("");
+    if (editing() && !b.growth) b.growth = {};
+    var growBlock = grow ? '<div class="gg-h">Growth guide (Ad Roadmap row)</div><div class="memo-g">'+grow+'</div><div class="gg-h">Test memo</div>' : '';
+    return '<details class="memo"'+(memoOpen ? ' open' : '')+'><summary>🧭 Test memo <span class="memo-p">only you see this; it is never in the shared copy</span></summary>' + growBlock
+      + (editing() ? '<textarea class="in" id="f-memoSummary" data-path="memoSummary" rows="2" placeholder="One-line summary">'+esc(b.memoSummary||"")+'</textarea>' : (b.memoSummary ? '<p class="memo-s">'+txt(b.memoSummary)+'</p>' : '')) + '<div class="memo-g">'+rows+'</div></details>';
+  }
+
+  /* ---------- zones ---------- */
+  function zoneBrief(){
+    var b = B(), out = '<section class="zone"><div class="zone-h">💡 The brief</div>';
+    out += card("Concept",
+      field("concept","",{big:true,rows:2,ph:"The idea in one or two lines",empty:"No concept yet."})
+      + field("angle","Angle",{rows:1,ph:"The desire or pain this pulls on"})
+      + field("audience","Who it's for",{rows:1,ph:"Avatar, awareness level"})
+      + field("notes","Strategy notes",{rows:3,ph:"Anything the editor should understand about why this ad works"}), {keep:true});
+    var H = b.hooks.length, Hd = Math.max(1, b.holds.length);
+    out += card("Variations needed", '<div class="stack"><span>'+plural(H,"hook")+'</span><span>'+plural(Hd,"hold")+'</span><span>'+plural(H*Hd,"total ad")+'</span></div>', {keep:true});
+    if (editing()){
+      out += card("Deliverables",
+        '<div class="f"><span class="f-l">Type of ad</span><div class="chips">'+TYPES.map(function(t){ return '<button class="chip'+(b.adType===t?' on':'')+'" data-act="type" data-v="'+t+'" aria-pressed="'+(b.adType===t)+'">'+t+'</button>'; }).join("")+'</div></div>'
+        + '<div class="f"><span class="f-l">Sizes</span><div class="chips">'+SIZES.map(function(z){ var on = b.sizes.indexOf(z[0]) > -1; return '<button class="chip'+(on?' on':'')+'" data-act="size" data-v="'+z[0]+'" aria-pressed="'+on+'">'+z[1]+'</button>'; }).join("")+'</div></div>'
+        + '<div class="row2">'+input("length","Length","e.g. 30–45 s")+input("due","Due","e.g. Fri 31 Oct")+'</div>'
+        + '<div class="f"><span class="f-l">Ad links to</span><div class="link-edit" style="padding-right:10px"><input class="in" id="f-linksTo-url" data-path="linksTo.url" value="'+esc(b.linksTo.url||"")+'" placeholder="Landing page URL"><input class="in" id="f-linksTo-name" data-path="linksTo.name" value="'+esc(b.linksTo.name||"")+'" placeholder="Label (optional)"></div></div>');
+    } else {
+      var sizes = SIZES.filter(function(z){ return b.sizes.indexOf(z[0]) > -1; }).map(function(z){ return '<li>'+z[1]+'</li>'; }).join("");
+      out += card("Type of ad", b.adType ? '<ul class="ticks"><li>'+esc(b.adType)+'</li></ul>' : "");
+      out += card("Sizes needed", sizes ? '<ul class="ticks">'+sizes+'</ul>' : "");
+      out += card("Length", b.length ? '<div class="center">'+esc(b.length)+'</div>' : "");
+      out += card("Ad links to", normUrl(b.linksTo.url) ? mediaItem(b.linksTo,"linksTo") : "");
+    }
+    out += b.references.map(function(r,i){
+      var p = "references."+i, tag = REFTAGS[r.tag] ? r.tag : "inspiration";
+      var head = editing()
+        ? '<select class="in" style="width:auto" id="'+fid(p+".tag")+'" data-path="'+p+'.tag" data-rerender="1">'+Object.keys(REFTAGS).map(function(k){ return '<option value="'+k+'"'+(tag===k?' selected':'')+'>'+k.charAt(0).toUpperCase()+k.slice(1)+'</option>'; }).join("")+'</select>'
+        : '<span class="rtag">'+tag+'</span>';
+      return '<div class="card ref '+tag+'"><div class="card-h">'+head+tools(p)+'</div>'
+        + '<div class="rhint">'+esc(REFTAGS[tag])+'</div>'
+        + (editing() ? input(p+".title","Title","e.g. The winner we're iterating on") : (r.title ? '<div class="center" style="font-weight:600">'+esc(r.title)+'</div>' : ""))
+        + media(p+".media","Add video")
+        + field(p+".note","What to take from it",{rows:2,ph:"Which part matters: the hook, the pacing, the captions…"})
+        + '</div>';
+    }).join("");
+    if (editing()) out += '<button class="mini" data-act="add" data-v="references">Add reference ad</button>';
+    return out + '</section>';
+  }
+
+  function zoneStructure(){
+    var b = B(), out = '<section class="zone"><div class="zone-h">🏗️ Ad structure</div>';
+    var n = Math.max(1, b.hooks.length);
+    var hooks = b.hooks.map(function(h,i){
+      var p = "hooks."+i;
+      var screen = editing()
+        ? field(p+".onScreen","Text on screen",{rows:2,ph:"Type it the way it should sit on screen. Press Enter where each line breaks."}) + frame(h.onScreen, p+".onScreen")
+        : (h.onScreen ? '<div class="f"><div class="f-l">Text on screen:</div>'+frame(h.onScreen)+'</div>' : "");
+      return '<div class="card"><div class="card-h">🪝 Hook '+(i+1)+(h.secs ? ' <span class="sc-fl">~'+esc(h.secs)+' s</span>' : '')+tools(p)+'</div>'
+        + '<div class="hv">'+field(p+".visual","Visuals",{rows:2,ph:"What we see"})+'</div>'
+        + screen
+        + field(p+".vo","Spoken",{rows:2,ph:"What's said, if anything"})
+        + field(p+".notes","Notes",{rows:1})
+        + media(p+".media")
+        + '</div>';
+    }).join("");
+    out += '<div class="row" style="--n:'+n+'">'+hooks+'</div>';
+    if (editing()) out += '<div><button class="mini" data-act="add" data-v="hooks">Add hook</button></div>';
+    out += '<div class="join'+(n===1?' single':'')+'" style="--n:'+n+'"></div>';
+    var holds = b.holds.map(function(h,i){
+      var p = "holds."+i;
+      return '<div class="card"><div class="card-h">👀 Hold'+(b.holds.length > 1 ? ' '+(i+1) : '')+tools(p)+'</div>'
+        + holdScript(h, p)
+        + scenes(h, p)
+        + field(p+".visual","Visuals",{rows:2,ph:"Shot list, b-roll, demo moments"})
+        + field(p+".onScreen","Text on screen",{rows:1})
+        + field(p+".notes","Notes",{rows:1})
+        + media(p+".media")
+        + '</div>';
+    }).join("");
+    out += '<div class="narrow">'+holds+(editing() ? '<div><button class="mini" data-act="add" data-v="holds">Add hold</button></div>' : '')+'</div>';
+    out += '<div class="down"></div>';
+    out += '<div class="narrow">'+card("CTA",
+        field("cta.copy","Copy",{rows:2,ph:"CTA line and end-card text"})
+        + field("cta.visual","Visuals",{rows:2,ph:"When it comes in and how long it stays"})
+        + field("cta.notes","Notes",{rows:1})
+        + media("cta.media"), {keep:true})+'</div>';
+    return out + '</section>';
+  }
+
+  function zoneEdit(){
+    var b = B(), out = '<section class="zone"><div class="zone-h">🎬 Editing notes</div>';
+    out += card("Guidelines", field("guidelines","",{rows:4,ph:"Pacing, captions, music, transitions, brand rules, things to avoid",empty:"No extra guidelines."}), {keep:true});
+    var vo = b.voiceover.map(function(v,i){
+      var p = "voiceover."+i;
+      if (editing()) return '<div class="boxed">'+tools(p)+input(p+".name","Track","e.g. Full VO")+input(p+".voice","Voice","ElevenLabs voice name")
+        + media(p+".media","Add MP3 / WAV") + field(p+".note","Notes",{rows:1}) + '</div>';
+      return '<div class="f">'+(v.name?'<div class="f-l center">'+esc(v.name)+'</div>':'')+(v.voice?'<div class="f-hint center">'+esc(v.voice)+'</div>':'')+media(p+".media")+(v.note?'<div class="f-v center">'+txt(v.note)+'</div>':'')+'</div>';
+    }).join("");
+    if (editing()) vo += '<button class="mini" data-act="add" data-v="voiceover">Add voiceover</button>';
+    out += card("Voiceover", vo);
+    out += card("Files &amp; folders", media("links","Add file"));
+    out += b.sections.map(function(x,i){
+      var p = "sections."+i;
+      return card(editing() ? '<input class="in" id="'+fid(p+".title")+'" data-path="'+p+'.title" value="'+esc(x.title||"")+'" placeholder="Section title">' : esc(x.title||"Notes"),
+        field(p+".body","",{rows:3,ph:"Anything else the editor needs"}) + media(p+".media"), {tools:tools(p), keep:editing()});
+    }).join("");
+    if (editing()) out += '<button class="mini" data-act="add" data-v="sections">Add section</button>';
+    return out + '</section>';
+  }
+
+  /* Headline preview: the text in a frame at the ad's real shape, line breaks exactly as typed,
+     each line kept on one line and the whole block scaled to fit the safe area. */
+  function ratio(b){
+    var order = [["9x16","9/16","9:16"],["4x5","4/5","4:5"],["1x1","1/1","1:1"],["16x9","16/9","16:9"]];
+    for (var i = 0; i < order.length; i++) if ((b.sizes||[]).indexOf(order[i][0]) > -1) return order[i];
+    return order[0];
+  }
+  function frame(text, forPath){
+    var r = ratio(B()), t = String(text || "").replace(/\s+$/,"").replace(/^\s*\n/,"");
+    return '<div class="frame" style="--ar:'+r[1]+'"><span class="frame-text"'+(forPath ? ' data-for="'+forPath+'"' : '')+'>'+esc(t)+'</span></div>'
+      + '<div class="frame-cap">'+r[2]+' preview'+(forPath ? ' · updates as you type' : '')+'</div>';
+  }
+  function fitFrames(){
+    // Line the frames up across hooks: every Visuals block in a row gets the tallest one's height.
+    app.querySelectorAll(".row").forEach(function(row){
+      var hv = row.querySelectorAll(".hv"), max = 0;
+      hv.forEach(function(x){ x.style.minHeight = ""; max = Math.max(max, x.offsetHeight); });
+      hv.forEach(function(x){ x.style.minHeight = max + "px"; });
+    });
+    app.querySelectorAll(".frame-text").forEach(function(t){
+      var box = t.parentNode, w = box.clientWidth * 0.8, h = box.clientHeight * 0.8;
+      if (!w) return;
+      var size = Math.min(w * 0.095, 42);
+      t.style.fontSize = size + "px";
+      var k = Math.min(1, w / (t.offsetWidth || 1), h / (t.offsetHeight || 1));
+      if (k < 1) t.style.fontSize = Math.max(7, Math.floor(size * k * 10) / 10) + "px";
+    });
+  }
+  var fitTimer = null;
+  window.addEventListener("resize", function(){ clearTimeout(fitTimer); fitTimer = setTimeout(fitFrames, 80); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ fitFrames(); });
+
+  function render(){
+    if (!briefs.length && !draft){
+      app.innerHTML = top() + '<div class="loading">No briefs yet. Click <b>New brief</b> to start one.</div>';
+      return;
+    }
+    var b = B(), upd = b.updated ? new Date(b.updated) : null;
+    app.innerHTML = top() + titleBlock() + memoBlock() + '<div class="board">'+zoneBrief()+zoneStructure()+zoneEdit()+'</div>'
+      + '<footer class="foot"><span>'+(upd && !isNaN(upd) ? 'Updated '+upd.toLocaleString(undefined,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}) : '')+'</span>'
+      + '<span>'+(READONLY ? 'Questions about the brief? Message whoever sent it.' : esc(briefs.length+' '+(briefs.length===1?'brief':'briefs')+' saved in shared/creative-briefs/briefs'))+'</span></footer>';
+    app.querySelectorAll("textarea.in").forEach(grow);
+    fitFrames();
+  }
+  function grow(t){ t.style.height = "auto"; t.style.height = (t.scrollHeight + 2) + "px"; }
+  function say(text,kind){ msg = {text:text||"", kind:kind||""}; render(); }
+
+  /* ---------- server calls ---------- */
+  function api(method, url, body, headers){
+    return fetch(url, {method:method, body:body, headers:headers || (body ? {"Content-Type":"application/json"} : undefined)})
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if (!r.ok) throw new Error(j.error || ("Error " + r.status)); return j; }); });
+  }
+  function goTo(i){
+    cur = Math.max(0, Math.min(i, briefs.length-1)); armDelete = false;
+    try { history.replaceState(null, "", "#" + briefs[cur].id); } catch(e){}
+    msg = {text:"",kind:""}; render(); window.scrollTo(0,0);
+  }
+
+  /* ---------- events ---------- */
+  app.addEventListener("input", function(e){
+    var t = e.target, p = t.getAttribute && t.getAttribute("data-path"); if (!p || !draft) return;
+    setPath(draft, p, t.value);
+    var pv = app.querySelector('.frame-text[data-for="'+p+'"]');
+    if (pv){ pv.textContent = t.value.replace(/\s+$/,"").replace(/^\s*\n/,""); fitFrames(); }
+    if (t.tagName === "TEXTAREA") grow(t);
+  });
+  app.addEventListener("toggle", function(e){ if (e.target.classList && e.target.classList.contains("memo")) memoOpen = e.target.open; }, true);
+  app.addEventListener("change", function(e){
+    var t = e.target;
+    if (t.id === "pick"){ goTo(Number(t.value)); return; }
+    if (t.getAttribute && t.getAttribute("data-rerender")) render();
+  });
+  app.addEventListener("click", function(e){
+    var el = e.target.closest("[data-act]"); if (!el || busy) return;
+    var act = el.getAttribute("data-act"), p = el.getAttribute("data-path"), v = el.getAttribute("data-v");
+    if (act === "dplay"){ var fr = document.createElement("iframe"); fr.className = "dv-frame"; fr.allow = "autoplay; fullscreen"; fr.src = "https://drive.google.com/file/d/"+el.getAttribute("data-id")+"/preview"; el.replaceWith(fr); return; }
+    if (act === "copyscript"){ copyText(el.getAttribute("data-text") || "").then(function(){ el.textContent = "Copied"; setTimeout(function(){ el.textContent = "Copy script"; }, 1500); }); return; }
+    if (act !== "delete") armDelete = false;
+    if (act === "edit"){ draft = clone(briefs[cur]); isNew = false; msg = {text:"",kind:""}; render(); return; }
+    if (act === "new"){ draft = blankBrief(); isNew = true; msg = {text:"",kind:""}; render(); window.scrollTo(0,0); return; }
+    if (act === "dup"){ draft = clone(briefs[cur]); draft.id = newId(); draft.title = (draft.title || "Untitled") + " (copy)"; draft.status = "Draft"; delete draft.updated; isNew = true; msg = {text:"",kind:""}; render(); window.scrollTo(0,0); return; }
+    if (act === "cancel"){ draft = null; isNew = false; msg = {text:"",kind:""}; render(); return; }
+    if (act === "save"){
+      busy = true; render();
+      api("PUT", "/api/briefs/" + encodeURIComponent(draft.id), JSON.stringify(draft)).then(function(saved){
+        normalize(saved);
+        var i = briefs.findIndex(function(b){ return b.id === saved.id; });
+        if (i > -1) briefs[i] = saved; else { briefs.unshift(saved); i = 0; }
+        draft = null; isNew = false; busy = false; cur = i;
+        try { history.replaceState(null, "", "#" + saved.id); } catch(e){}
+        say("Saved.", "good");
+      }).catch(function(err){ busy = false; say("Couldn't save: " + err.message + ". Is the briefs server still running?", "err"); });
+      return;
+    }
+    if (act === "delete"){
+      if (!armDelete){ armDelete = true; render(); return; }
+      armDelete = false; busy = true; render();
+      api("DELETE", "/api/briefs/" + encodeURIComponent(draft.id)).then(function(){
+        briefs.splice(cur,1); draft = null; busy = false; cur = 0;
+        say("Brief deleted. A copy is kept in briefs/.deleted.", "good");
+      }).catch(function(err){ busy = false; say("Couldn't delete: " + err.message, "err"); });
+      return;
+    }
+    if (act === "share"){
+      busy = true; render();
+      api("POST", "/api/export/" + encodeURIComponent(briefs[cur].id)).then(function(r){
+        busy = false;
+        var note = r.embedded && r.embedded.length ? " " + r.embedded.length + " clip(s) aren't in the Drive folder yet, so they're packed inside the file: " + r.embedded.join(", ") + "." : "";
+        if (r.link){ copyText(r.link); say("Brief link (copied, live in about a minute): " + r.link + " · Same link every time you re-share this brief. Paste it in the growth guide's LINK TO BRIEF.", "good"); }
+        else say("Saved " + r.file + " (" + r.mb + " MB) in " + r.folder + ". " + (r.linked ? r.linked + " clips play from Google Drive. " : "") + "Send that file to the editor; it opens in any browser, read-only." + note, note ? "err" : "good");
+      }).catch(function(err){ busy = false; say("Couldn't build the file: " + err.message, "err"); });
+      return;
+    }
+    if (act === "type"){ draft.adType = v; render(); return; }
+    if (act === "size"){ var s = draft.sizes, k = s.indexOf(v); if (k > -1) s.splice(k,1); else s.push(v); render(); return; }
+    if (act === "add"){
+      var blank = {hooks:{visual:"",onScreen:"",vo:"",notes:"",media:[]}, holds:{script:"",onScreen:"",visual:"",notes:"",media:[]},
+        references:{tag:"inspiration",title:"",note:"",media:[]}, voiceover:{name:"",voice:"",note:"",media:[]}, sections:{title:"",body:"",media:[]}}[v];
+      draft[v].push(blank); render(); return;
+    }
+    if (act === "addbeat"){ var hp = p.split(".").slice(0,2).join("."), h = getPath(draft, hp); h.beats = h.beats || []; h.beats.push({text:"",vo:"",visual:"",shoot:"library",media:[]}); render(); return; }
+    if (act === "del"){ var ks = p.split("."), idx = Number(ks.pop()); getPath(draft, ks.join(".")).splice(idx,1); render(); return; }
+    if (act === "link"){ getPath(draft,p).push({kind:"link",url:"",name:""}); render(); var ins = app.querySelectorAll('[data-path^="'+p+'."][data-path$=".url"]'); if (ins.length) ins[ins.length-1].focus(); return; }
+    if (act === "file"){ fileTarget = p; fileInput.value = ""; fileInput.click(); return; }
+  });
+  fileInput.addEventListener("change", function(){
+    var files = Array.prototype.slice.call(fileInput.files || []); if (!files.length || !fileTarget || !draft) return;
+    var target = fileTarget, errs = [];
+    busy = true; say("Uploading " + plural(files.length,"file") + "…");
+    files.reduce(function(chain, f){
+      return chain.then(function(){
+        var ext = (f.name.split(".").pop() || "").toLowerCase();
+        var kind = /^(mp4|mov|webm)$/.test(ext) ? "video" : /^(mp3|wav|m4a)$/.test(ext) ? "audio" : /^(png|jpe?g|webp|gif)$/.test(ext) ? "image" : "file";
+        return api("POST", "/api/media?name=" + encodeURIComponent(f.name), f, {"Content-Type":"application/octet-stream"})
+          .then(function(r){ getPath(draft,target).push({kind:kind, name:f.name, src:r.src}); })
+          .catch(function(err){ errs.push(err.message); });
+      });
+    }, Promise.resolve()).then(function(){
+      busy = false;
+      say(errs.length ? errs.join(" ") : "Uploaded. Save the brief to keep it.", errs.length ? "err" : "");
+    });
+  });
+
+  /* ---------- start ---------- */
+  if (READONLY){
+    try { briefs = [normalize(JSON.parse(exportText))]; } catch(e){ app.innerHTML = '<p class="loading">This brief file is damaged. Ask for a new copy.</p>'; return; }
+    render();
+  } else if (location.protocol === "file:"){
+    app.innerHTML = '<p class="loading">Open the briefs app with <b>Open Briefs.command</b> (double-click it in shared/creative-briefs).</p>';
+  } else {
+    api("GET", "/api/briefs").then(function(list){
+      briefs = list.map(normalize);
+      // Fixed order (a brief's "order" number) first, then newest; the server sorts too, this guards a stale server.
+      briefs = briefs.map(function(b,i){ return [b,i]; }).sort(function(x,y){
+        var a = typeof x[0].order === "number", c = typeof y[0].order === "number";
+        if (a && c) return x[0].order - y[0].order;
+        if (a !== c) return a ? -1 : 1;
+        return x[1] - y[1];
+      }).map(function(p){ return p[0]; });
+      var h = (location.hash || "").replace(/^#/,""), i = briefs.findIndex(function(b){ return b.id === h; });
+      cur = i > -1 ? i : 0;
+      render();
+    }).catch(function(err){ app.innerHTML = '<p class="loading">Couldn\'t load briefs: ' + esc(err.message) + '</p>'; });
+  }
+})();
+</script>
+</body>
+</html>
